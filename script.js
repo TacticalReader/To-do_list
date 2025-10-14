@@ -299,16 +299,19 @@ document.addEventListener('DOMContentLoaded', () => {
   
   confirmDeleteBtn.addEventListener('click', () => {
     if (todoIdToDelete) {
-      const todoElement = document.querySelector(`.todo-item[data-id="${todoIdToDelete}"]`);
+      const idToDelete = todoIdToDelete; // Capture ID before it's cleared
+      const todoElement = document.querySelector(`.todo-item[data-id="${idToDelete}"]`);
+      
+      hideConfirmationDialog();
+
       if (todoElement) {
         todoElement.classList.add('animate-fade-out');
         setTimeout(() => {
-          deleteTodo(todoIdToDelete);
+          deleteTodo(idToDelete);
         }, 300); // Wait for animation
       } else {
-        deleteTodo(todoIdToDelete);
+        deleteTodo(idToDelete);
       }
-      hideConfirmationDialog();
     }
   });
 
