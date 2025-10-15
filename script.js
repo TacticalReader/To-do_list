@@ -277,12 +277,33 @@ const updateDateTime = () => {
 
 // --- INITIALIZATION ---
 document.addEventListener('DOMContentLoaded', () => {
+  const originalPlaceholder = todoInput.placeholder;
+
   todoForm.addEventListener('submit', (e) => {
     e.preventDefault();
-    const newText = todoInput.value;
-    if (newText.trim()) {
+    const newText = todoInput.value.trim();
+    if (newText) {
       addTodo(newText);
       todoInput.value = '';
+      todoInput.classList.remove('todo-input--error');
+      todoInput.placeholder = originalPlaceholder;
+    } else {
+      todoInput.value = ''; // Clear out any whitespace
+      todoInput.classList.add('todo-input--error', 'animate-shake');
+      todoInput.placeholder = "Oops! A task can't be empty.";
+
+      // Remove shake animation class after it's done
+      todoInput.addEventListener('animationend', () => {
+        todoInput.classList.remove('animate-shake');
+      }, { once: true });
+    }
+  });
+
+  // Remove error styling once the user starts typing again
+  todoInput.addEventListener('input', () => {
+    if(todoInput.classList.contains('todo-input--error')) {
+        todoInput.classList.remove('todo-input--error');
+        todoInput.placeholder = originalPlaceholder;
     }
   });
 
