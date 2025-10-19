@@ -398,38 +398,10 @@ const updateDateTime = () => {
     currentTimeEl.innerHTML = `<i class="fa-regular fa-clock"></i> ${now.toLocaleTimeString('en-US', timeOptions)}`;
 };
 
-
-// --- INITIALIZATION ---
-const initializeApp = () => {
-  // 1. Render the main HTML structure
-  renderAppLayout();
-
-  // 2. Get references to all DOM elements now that they exist
-  todoForm = document.getElementById('todo-form');
-  todoInput = document.getElementById('todo-input-field');
-  todoListContainer = document.getElementById('todo-list-container');
-  currentDateEl = document.getElementById('current-date');
-  currentTimeEl = document.getElementById('current-time');
-  clearCompletedBtn = document.getElementById('clear-completed-btn');
-  confirmationDialog = document.getElementById('confirmation-dialog');
-  confirmDeleteBtn = document.getElementById('confirm-delete-btn');
-  cancelDeleteBtn = document.getElementById('cancel-delete-btn');
-  helpBtn = document.getElementById('help-btn');
-  helpDialog = document.getElementById('help-dialog');
-  helpForm = document.getElementById('help-form');
-  helpTextarea = document.getElementById('help-textarea');
-  cancelHelpBtn = document.getElementById('cancel-help-btn');
-  sendReportBtn = document.getElementById('send-report-btn');
-  helpSuccessMessage = document.getElementById('help-success-message');
-
-  // 3. Initialize AOS library
-  AOS.init({
-    duration: 600,
-    once: true,
-    offset: 20,
-  });
-
-  // 4. Attach all event listeners
+/**
+ * Attaches all the application's event listeners.
+ */
+const attachEventListeners = () => {
   const originalPlaceholder = todoInput.placeholder;
 
   todoForm.addEventListener('submit', (e) => {
@@ -508,6 +480,40 @@ const initializeApp = () => {
       setTimeout(hideHelpDialog, 3000);
     }
   });
+};
+
+// --- INITIALIZATION ---
+const initializeApp = () => {
+  // 1. Render the main HTML structure
+  renderAppLayout();
+
+  // 2. Get references to all DOM elements now that they exist
+  todoForm = document.getElementById('todo-form');
+  todoInput = document.getElementById('todo-input-field');
+  todoListContainer = document.getElementById('todo-list-container');
+  currentDateEl = document.getElementById('current-date');
+  currentTimeEl = document.getElementById('current-time');
+  clearCompletedBtn = document.getElementById('clear-completed-btn');
+  confirmationDialog = document.getElementById('confirmation-dialog');
+  confirmDeleteBtn = document.getElementById('confirm-delete-btn');
+  cancelDeleteBtn = document.getElementById('cancel-delete-btn');
+  helpBtn = document.getElementById('help-btn');
+  helpDialog = document.getElementById('help-dialog');
+  helpForm = document.getElementById('help-form');
+  helpTextarea = document.getElementById('help-textarea');
+  cancelHelpBtn = document.getElementById('cancel-help-btn');
+  sendReportBtn = document.getElementById('send-report-btn');
+  helpSuccessMessage = document.getElementById('help-success-message');
+
+  // 3. Initialize AOS library
+  AOS.init({
+    duration: 600,
+    once: true,
+    offset: 20,
+  });
+
+  // 4. Attach all event listeners
+  attachEventListeners();
 
   // 5. Start recurring tasks and load initial data
   updateDateTime();
