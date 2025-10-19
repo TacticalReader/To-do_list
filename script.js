@@ -2,28 +2,144 @@
 let todos = [];
 let todoIdToDelete = null;
 
-// --- DOM ELEMENT REFERENCES ---
-const todoForm = document.getElementById('todo-form');
-const todoInput = document.getElementById('todo-input-field');
-const todoListContainer = document.getElementById('todo-list-container');
-const currentDateEl = document.getElementById('current-date');
-const currentTimeEl = document.getElementById('current-time');
-const clearCompletedBtn = document.getElementById('clear-completed-btn');
+// --- DOM ELEMENT REFERENCES (will be assigned after layout is rendered) ---
+let todoForm, todoInput, todoListContainer, currentDateEl, currentTimeEl, clearCompletedBtn;
+let confirmationDialog, confirmDeleteBtn, cancelDeleteBtn;
+let helpBtn, helpDialog, helpForm, helpTextarea, cancelHelpBtn, sendReportBtn, helpSuccessMessage;
 
-// Deletion Dialog
-const confirmationDialog = document.getElementById('confirmation-dialog');
-const confirmDeleteBtn = document.getElementById('confirm-delete-btn');
-const cancelDeleteBtn = document.getElementById('cancel-delete-btn');
+// --- RENDER APP LAYOUT ---
+const renderAppLayout = () => {
+  const root = document.getElementById('root');
+  if (!root) {
+    console.error('Root element #root not found!');
+    return;
+  }
+  root.innerHTML = `
+    <div class="background-animation">
+      <div class="blob blob1"></div>
+      <div class="blob blob2"></div>
+      <div class="blob blob3"></div>
+    </div>
+    <div class="app-container">
+      
+      <!-- Date and Time Display -->
+      <div class="date-time-container" data-aos="fade-down">
+        <div id="current-date"></div>
+        <div id="current-time"></div>
+      </div>
 
-// Help Dialog
-const helpBtn = document.getElementById('help-btn');
-const helpDialog = document.getElementById('help-dialog');
-const helpForm = document.getElementById('help-form');
-const helpTextarea = document.getElementById('help-textarea');
-const cancelHelpBtn = document.getElementById('cancel-help-btn');
-const sendReportBtn = document.getElementById('send-report-btn');
-const helpSuccessMessage = document.getElementById('help-success-message');
+      <div class="todo-app-card" data-aos="fade-up">
+        <!-- Header -->
+        <div class="header">
+          <div class="header-text-content">
+            <h1 class="header-title">
+              <i class="fa-solid fa-list-check header-icon"></i>
+              Todo List
+            </h1>
+            <p class="header-subtitle">Stay organized, one task at a time.</p>
+          </div>
+        </div>
 
+        <!-- Todo Input Form -->
+        <form id="todo-form" class="todo-input-form">
+          <input
+            type="text"
+            id="todo-input-field"
+            placeholder="Add a new task..."
+            class="todo-input"
+            autocomplete="off"
+            aria-label="New task input"
+          />
+          <button
+            type="submit"
+            class="add-todo-button"
+            aria-label="Add new task"
+          >
+            <i class="fa-solid fa-plus"></i>
+          </button>
+        </form>
+
+        <!-- Actions Toolbar -->
+        <div class="actions-toolbar">
+           <button id="clear-completed-btn" class="clear-completed-button" style="display: none;" aria-label="Clear all completed tasks">
+            <i class="fa-solid fa-trash-can-arrow-up"></i>
+            <span class="clear-button-text">Clear Completed</span>
+          </button>
+        </div>
+        
+        <!-- Todo List gets rendered here -->
+        <div id="todo-list-container"></div>
+
+      </div>
+       <footer class="footer" data-aos="fade-up" data-aos-delay="200">
+         <div class="footer-content">
+            <div class="credit-box">
+              <p class="credit-text"><i class="fa-solid fa-laptop-code"></i> Programmed & Designed by <span class="credit-name">Tanmay Srivastava</span></p>
+              <a href="https://github.com/TacticalReader" target="_blank" rel="noopener noreferrer" class="github-link">
+                  <i class="fa-brands fa-github"></i>
+                  <span>TacticalReader</span>
+              </a>
+            </div>
+           <button id="help-btn" class="help-button" aria-label="Get help or report an issue">
+             <i class="fa-solid fa-question-circle"></i>
+             <span>Help</span>
+           </button>
+         </div>
+      </footer>
+    </div>
+    
+    <!-- Confirmation Dialog -->
+    <div id="confirmation-dialog" class="dialog-overlay">
+      <div class="dialog-box" role="alertdialog" aria-modal="true" aria-labelledby="dialog-title" aria-describedby="dialog-message">
+        <h3 id="dialog-title" class="dialog-title">
+          <i class="fa-solid fa-triangle-exclamation"></i>
+          Confirm Deletion
+        </h3>
+        <p id="dialog-message" class="dialog-message">Are you sure you want to permanently delete this task?</p>
+        <div class="dialog-actions">
+          <button id="cancel-delete-btn" class="dialog-button dialog-button--cancel">
+            <i class="fa-solid fa-xmark"></i>
+            <span class="dialog-button-text">Cancel</span>
+          </button>
+          <button id="confirm-delete-btn" class="dialog-button dialog-button--confirm">
+            <i class="fa-solid fa-trash-can"></i>
+            <span class="dialog-button-text">Delete</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Help/Report Dialog -->
+    <div id="help-dialog" class="dialog-overlay">
+      <div class="dialog-box" role="dialog" aria-modal="true" aria-labelledby="help-dialog-title">
+        <form id="help-form">
+          <h3 id="help-dialog-title" class="dialog-title">
+            <i class="fa-solid fa-life-ring"></i>
+            Report an Issue
+          </h3>
+          <p class="dialog-message">
+            Having trouble? Describe the issue you're facing, and we'll look into it.
+          </p>
+          <textarea id="help-textarea" class="help-textarea" placeholder="Please describe the problem in detail (minimum 10 characters)..." required minlength="10" rows="4"></textarea>
+          <div id="help-success-message" class="dialog-success-message" style="display: none;">
+            <i class="fa-solid fa-check-circle"></i>
+            Thank you! Your report has been sent.
+          </div>
+          <div class="dialog-actions">
+            <button id="cancel-help-btn" type="button" class="dialog-button dialog-button--cancel">
+                <i class="fa-solid fa-xmark"></i>
+                <span class="dialog-button-text">Cancel</span>
+            </button>
+            <button id="send-report-btn" type="submit" class="dialog-button dialog-button--submit" disabled>
+                <i class="fa-solid fa-paper-plane"></i>
+                <span class="dialog-button-text">Send Report</span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  `;
+};
 
 // --- DATA & STATE MANAGEMENT ---
 const saveTodos = () => {
@@ -142,6 +258,9 @@ const createTodoItemElement = (todo) => {
   const li = document.createElement('li');
   li.className = 'todo-item';
   li.dataset.id = todo.id;
+  li.setAttribute('data-aos', 'fade-left');
+  li.setAttribute('data-aos-delay', '50');
+  li.setAttribute('data-aos-anchor', '.todo-list');
 
   const toggleButton = document.createElement('button');
   toggleButton.className = `toggle-button ${todo.completed ? 'toggle-button--completed' : ''}`;
@@ -232,11 +351,13 @@ const createTodoItemElement = (todo) => {
  * Renders the entire list of todos or an empty state message.
  */
 const renderTodos = () => {
+  if (!todoListContainer) return;
   todoListContainer.innerHTML = '';
 
   if (todos.length === 0) {
     const emptyState = document.createElement('div');
     emptyState.className = 'empty-todo-list';
+    emptyState.setAttribute('data-aos', 'zoom-in');
     emptyState.innerHTML = `
       <i class="fa-solid fa-clipboard-check"></i>
       <p class="font-semibold">All tasks completed!</p>
@@ -257,6 +378,9 @@ const renderTodos = () => {
   // Show/hide clear completed button
   const hasCompleted = todos.some(t => t.completed);
   clearCompletedBtn.style.display = hasCompleted ? 'flex' : 'none';
+
+  // Refresh AOS to detect new elements
+  AOS.refresh();
 };
 
 /**
@@ -276,7 +400,36 @@ const updateDateTime = () => {
 
 
 // --- INITIALIZATION ---
-document.addEventListener('DOMContentLoaded', () => {
+const initializeApp = () => {
+  // 1. Render the main HTML structure
+  renderAppLayout();
+
+  // 2. Get references to all DOM elements now that they exist
+  todoForm = document.getElementById('todo-form');
+  todoInput = document.getElementById('todo-input-field');
+  todoListContainer = document.getElementById('todo-list-container');
+  currentDateEl = document.getElementById('current-date');
+  currentTimeEl = document.getElementById('current-time');
+  clearCompletedBtn = document.getElementById('clear-completed-btn');
+  confirmationDialog = document.getElementById('confirmation-dialog');
+  confirmDeleteBtn = document.getElementById('confirm-delete-btn');
+  cancelDeleteBtn = document.getElementById('cancel-delete-btn');
+  helpBtn = document.getElementById('help-btn');
+  helpDialog = document.getElementById('help-dialog');
+  helpForm = document.getElementById('help-form');
+  helpTextarea = document.getElementById('help-textarea');
+  cancelHelpBtn = document.getElementById('cancel-help-btn');
+  sendReportBtn = document.getElementById('send-report-btn');
+  helpSuccessMessage = document.getElementById('help-success-message');
+
+  // 3. Initialize AOS library
+  AOS.init({
+    duration: 600,
+    once: true,
+    offset: 20,
+  });
+
+  // 4. Attach all event listeners
   const originalPlaceholder = todoInput.placeholder;
 
   todoForm.addEventListener('submit', (e) => {
@@ -292,14 +445,12 @@ document.addEventListener('DOMContentLoaded', () => {
       todoInput.classList.add('todo-input--error', 'animate-shake');
       todoInput.placeholder = "Oops! A task can't be empty.";
 
-      // Remove shake animation class after it's done
       todoInput.addEventListener('animationend', () => {
         todoInput.classList.remove('animate-shake');
       }, { once: true });
     }
   });
 
-  // Remove error styling once the user starts typing again
   todoInput.addEventListener('input', () => {
     if(todoInput.classList.contains('todo-input--error')) {
         todoInput.classList.remove('todo-input--error');
@@ -309,40 +460,31 @@ document.addEventListener('DOMContentLoaded', () => {
 
   clearCompletedBtn.addEventListener('click', clearCompletedTodos);
 
-  // Deletion Dialog listeners
   cancelDeleteBtn.addEventListener('click', hideConfirmationDialog);
-
   confirmationDialog.addEventListener('click', (e) => {
-    if (e.target === confirmationDialog) {
-      hideConfirmationDialog();
-    }
+    if (e.target === confirmationDialog) hideConfirmationDialog();
   });
   
   confirmDeleteBtn.addEventListener('click', () => {
     if (todoIdToDelete) {
-      const idToDelete = todoIdToDelete; // Capture ID before it's cleared
+      const idToDelete = todoIdToDelete;
       const todoElement = document.querySelector(`.todo-item[data-id="${idToDelete}"]`);
       
       hideConfirmationDialog();
 
       if (todoElement) {
         todoElement.classList.add('animate-fade-out');
-        setTimeout(() => {
-          deleteTodo(idToDelete);
-        }, 300); // Wait for animation
+        setTimeout(() => deleteTodo(idToDelete), 300);
       } else {
         deleteTodo(idToDelete);
       }
     }
   });
 
-  // Help Dialog listeners
   helpBtn.addEventListener('click', showHelpDialog);
   cancelHelpBtn.addEventListener('click', hideHelpDialog);
   helpDialog.addEventListener('click', (e) => {
-    if (e.target === helpDialog) {
-      hideHelpDialog();
-    }
+    if (e.target === helpDialog) hideHelpDialog();
   });
 
   helpTextarea.addEventListener('input', () => {
@@ -363,14 +505,16 @@ document.addEventListener('DOMContentLoaded', () => {
       helpSuccessMessage.style.display = 'flex';
       cancelHelpBtn.querySelector('.dialog-button-text').textContent = 'Close';
 
-      setTimeout(hideHelpDialog, 3000); // Auto-close after 3 seconds
+      setTimeout(hideHelpDialog, 3000);
     }
   });
 
-  // Initialize and update date/time every second
+  // 5. Start recurring tasks and load initial data
   updateDateTime();
   setInterval(updateDateTime, 1000);
 
   loadTodos();
   renderTodos();
-});
+};
+
+document.addEventListener('DOMContentLoaded', initializeApp);
