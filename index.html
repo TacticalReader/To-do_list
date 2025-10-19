@@ -7,14 +7,136 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Geo:ital@0;1&family=Orbitron:wght@400..900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400..900&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet" integrity="sha384-eHOoWIiDD2JmHyKvN3f2sTmbvfCeG8+KbbU3eCDZkL2AFH3LwL1LqYk6sVpCwwNb" crossorigin="anonymous">
     <link rel="stylesheet" href="style.css">
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <div class="background-animation">
+        <div class="blob blob1"></div>
+        <div class="blob blob2"></div>
+        <div class="blob blob3"></div>
+      </div>
+      <div class="app-container">
+        
+        <!-- Date and Time Display -->
+        <div class="date-time-container" data-aos="fade-down">
+          <div id="current-date"></div>
+          <div id="current-time"></div>
+        </div>
+  
+        <div class="todo-app-card" data-aos="fade-up">
+          <!-- Header -->
+          <div class="header">
+            <div class="header-text-content">
+              <h1 class="header-title">
+                <i class="fa-solid fa-list-check header-icon"></i>
+                Todo List
+              </h1>
+              <p class="header-subtitle">Stay organized, one task at a time.</p>
+            </div>
+          </div>
+  
+          <!-- Todo Input Form -->
+          <form id="todo-form" class="todo-input-form">
+            <input
+              type="text"
+              id="todo-input-field"
+              placeholder="Add a new task..."
+              class="todo-input"
+              autocomplete="off"
+              aria-label="New task input"
+            />
+            <button
+              type="submit"
+              class="add-todo-button"
+              aria-label="Add new task"
+            >
+              <i class="fa-solid fa-plus"></i>
+            </button>
+          </form>
+  
+          <!-- Actions Toolbar -->
+          <div class="actions-toolbar">
+             <button id="clear-completed-btn" class="clear-completed-button" style="display: none;" aria-label="Clear all completed tasks">
+              <i class="fa-solid fa-trash-can-arrow-up"></i>
+              <span class="clear-button-text">Clear Completed</span>
+            </button>
+          </div>
+          
+          <!-- Todo List gets rendered here -->
+          <div id="todo-list-container"></div>
+  
+        </div>
+         <footer class="footer" data-aos="fade-up" data-aos-delay="200">
+           <div class="footer-content">
+              <div class="credit-box">
+                <p class="credit-text"><i class="fa-solid fa-laptop-code"></i> Programmed & Designed by <span class="credit-name">Tanmay Srivastava</span></p>
+                <a href="https://github.com/TacticalReader" target="_blank" rel="noopener noreferrer" class="github-link">
+                    <i class="fa-brands fa-github"></i>
+                    <span>TacticalReader</span>
+                </a>
+              </div>
+             <button id="help-btn" class="help-button" aria-label="Get help or report an issue">
+               <i class="fa-solid fa-question-circle"></i>
+               <span>Help</span>
+             </button>
+           </div>
+        </footer>
+      </div>
+      
+      <!-- Confirmation Dialog -->
+      <div id="confirmation-dialog" class="dialog-overlay">
+        <div class="dialog-box" role="alertdialog" aria-modal="true" aria-labelledby="dialog-title" aria-describedby="dialog-message">
+          <h3 id="dialog-title" class="dialog-title">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+            Confirm Deletion
+          </h3>
+          <p id="dialog-message" class="dialog-message">Are you sure you want to permanently delete this task?</p>
+          <div class="dialog-actions">
+            <button id="cancel-delete-btn" class="dialog-button dialog-button--cancel">
+              <i class="fa-solid fa-xmark"></i>
+              <span class="dialog-button-text">Cancel</span>
+            </button>
+            <button id="confirm-delete-btn" class="dialog-button dialog-button--confirm">
+              <i class="fa-solid fa-trash-can"></i>
+              <span class="dialog-button-text">Delete</span>
+            </button>
+          </div>
+        </div>
+      </div>
+  
+      <!-- Help/Report Dialog -->
+      <div id="help-dialog" class="dialog-overlay">
+        <div class="dialog-box" role="dialog" aria-modal="true" aria-labelledby="help-dialog-title">
+          <form id="help-form">
+            <h3 id="help-dialog-title" class="dialog-title">
+              <i class="fa-solid fa-life-ring"></i>
+              Report an Issue
+            </h3>
+            <p class="dialog-message">
+              Having trouble? Describe the issue you're facing, and we'll look into it.
+            </p>
+            <textarea id="help-textarea" class="help-textarea" placeholder="Please describe the problem in detail (minimum 10 characters)..." required minlength="10" rows="4"></textarea>
+            <div id="help-success-message" class="dialog-success-message" style="display: none;">
+              <i class="fa-solid fa-check-circle"></i>
+              Thank you! Your report has been sent.
+            </div>
+            <div class="dialog-actions">
+              <button id="cancel-help-btn" type="button" class="dialog-button dialog-button--cancel">
+                  <i class="fa-solid fa-xmark"></i>
+                  <span class="dialog-button-text">Cancel</span>
+              </button>
+              <button id="send-report-btn" type="submit" class="dialog-button dialog-button--submit" disabled>
+                  <i class="fa-solid fa-paper-plane"></i>
+                  <span class="dialog-button-text">Send Report</span>
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
     
     <script src="https://unpkg.com/aos@2.3.1/dist/aos.js" integrity="sha384-A7FZj7v+d/sdmMqp/nOQwliLvUsJfDHW+k9Omg/a/EheAdgtzNs3hpfag6Ed950n" crossorigin="anonymous"></script>
-    <script type="module" src="script.js"></script>
-  </body>
-</html>
+    <script type=
