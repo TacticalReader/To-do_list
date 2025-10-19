@@ -1,20 +1,29 @@
-// --- CONSTANTS ---
-const CONSTANTS = {
-  MIN_REPORT_LENGTH: 10,
-  ANIMATION_DURATIONS: {
-    ERASE_OUT: 400,
-    FADE_OUT: 300,
-    DIALOG_TRANSITION: 200,
-    SUCCESS_MESSAGE_DISPLAY: 3000,
-  }
-};
-
 // --- STATE ---
 let todos = [];
 let todoIdToDelete = null;
 
 // --- DOM ELEMENT REFERENCES ---
-const DOM = {};
+const todoForm = document.getElementById('todo-form');
+const todoInput = document.getElementById('todo-input-field');
+const todoListContainer = document.getElementById('todo-list-container');
+const currentDateEl = document.getElementById('current-date');
+const currentTimeEl = document.getElementById('current-time');
+const clearCompletedBtn = document.getElementById('clear-completed-btn');
+
+// Deletion Dialog
+const confirmationDialog = document.getElementById('confirmation-dialog');
+const confirmDeleteBtn = document.getElementById('confirm-delete-btn');
+const cancelDeleteBtn = document.getElementById('cancel-delete-btn');
+
+// Help Dialog
+const helpBtn = document.getElementById('help-btn');
+const helpDialog = document.getElementById('help-dialog');
+const helpForm = document.getElementById('help-form');
+const helpTextarea = document.getElementById('help-textarea');
+const cancelHelpBtn = document.getElementById('cancel-help-btn');
+const sendReportBtn = document.getElementById('send-report-btn');
+const helpSuccessMessage = document.getElementById('help-success-message');
+
 
 // --- DATA & STATE MANAGEMENT ---
 const saveTodos = () => {
@@ -87,38 +96,38 @@ const clearCompletedTodos = () => {
     todos = todos.filter(t => !t.completed);
     saveTodos();
     renderTodos();
-  }, CONSTANTS.ANIMATION_DURATIONS.ERASE_OUT); // Match CSS animation duration
+  }, 400); // Match CSS animation duration
 };
 
 // --- DIALOGS ---
 const showConfirmationDialog = (id) => {
   todoIdToDelete = id;
-  DOM.confirmationDialog.classList.add('dialog-overlay--visible');
+  confirmationDialog.classList.add('dialog-overlay--visible');
 };
 
 const hideConfirmationDialog = () => {
   todoIdToDelete = null;
-  DOM.confirmationDialog.classList.remove('dialog-overlay--visible');
+  confirmationDialog.classList.remove('dialog-overlay--visible');
 };
 
 const showHelpDialog = () => {
-  DOM.helpDialog.classList.add('dialog-overlay--visible');
-  DOM.helpTextarea.focus();
-  DOM.sendReportBtn.disabled = DOM.helpTextarea.value.trim().length < CONSTANTS.MIN_REPORT_LENGTH;
+  helpDialog.classList.add('dialog-overlay--visible');
+  helpTextarea.focus();
+  sendReportBtn.disabled = helpTextarea.value.trim().length < 10;
 };
 
 const hideHelpDialog = () => {
-  DOM.helpDialog.classList.remove('dialog-overlay--visible');
+  helpDialog.classList.remove('dialog-overlay--visible');
   // Use a timeout to reset the form after the fade-out animation completes
   setTimeout(() => {
-    DOM.helpSuccessMessage.style.display = 'none';
-    DOM.helpTextarea.style.display = 'block';
-    DOM.helpForm.querySelector('.dialog-message').style.display = 'block';
-    DOM.sendReportBtn.style.display = 'inline-flex';
-    DOM.cancelHelpBtn.querySelector('.dialog-button-text').textContent = 'Cancel';
-    DOM.helpTextarea.value = '';
-    DOM.sendReportBtn.disabled = true;
-  }, CONSTANTS.ANIMATION_DURATIONS.DIALOG_TRANSITION); // Match CSS transition duration
+    helpSuccessMessage.style.display = 'none';
+    helpTextarea.style.display = 'block';
+    helpForm.querySelector('.dialog-message').style.display = 'block';
+    sendReportBtn.style.display = 'inline-flex';
+    cancelHelpBtn.querySelector('.dialog-button-text').textContent = 'Cancel';
+    helpTextarea.value = '';
+    sendReportBtn.disabled = true;
+  }, 200); // Match CSS transition duration
 };
 
 
@@ -133,9 +142,6 @@ const createTodoItemElement = (todo) => {
   const li = document.createElement('li');
   li.className = 'todo-item';
   li.dataset.id = todo.id;
-  li.setAttribute('data-aos', 'fade-left');
-  li.setAttribute('data-aos-delay', '50');
-  li.setAttribute('data-aos-anchor', '.todo-list');
 
   const toggleButton = document.createElement('button');
   toggleButton.className = `toggle-button ${todo.completed ? 'toggle-button--completed' : ''}`;
@@ -226,19 +232,17 @@ const createTodoItemElement = (todo) => {
  * Renders the entire list of todos or an empty state message.
  */
 const renderTodos = () => {
-  if (!DOM.todoListContainer) return;
-  DOM.todoListContainer.innerHTML = '';
+  todoListContainer.innerHTML = '';
 
   if (todos.length === 0) {
     const emptyState = document.createElement('div');
     emptyState.className = 'empty-todo-list';
-    emptyState.setAttribute('data-aos', 'zoom-in');
     emptyState.innerHTML = `
       <i class="fa-solid fa-clipboard-check"></i>
       <p class="font-semibold">All tasks completed!</p>
       <p>Add a new task to get started.</p>
     `;
-    DOM.todoListContainer.appendChild(emptyState);
+    todoListContainer.appendChild(emptyState);
   } else {
     const ul = document.createElement('ul');
     ul.className = 'todo-list';
@@ -247,152 +251,126 @@ const renderTodos = () => {
       const todoElement = createTodoItemElement(todo);
       ul.appendChild(todoElement);
     });
-    DOM.todoListContainer.appendChild(ul);
+    todoListContainer.appendChild(ul);
   }
 
   // Show/hide clear completed button
   const hasCompleted = todos.some(t => t.completed);
-  DOM.clearCompletedBtn.style.display = hasCompleted ? 'flex' : 'none';
-
-  // Refresh AOS to detect new elements
-  AOS.refresh();
+  clearCompletedBtn.style.display = hasCompleted ? 'flex' : 'none';
 };
 
 /**
  * Updates the date and time display.
  */
 const updateDateTime = () => {
-    if (!DOM.currentDateEl || !DOM.currentTimeEl) return;
+    if (!currentDateEl || !currentTimeEl) return;
 
     const now = new Date();
     
     const dateOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-    DOM.currentDateEl.innerHTML = `<i class="fa-solid fa-calendar-day"></i> ${now.toLocaleDateString('en-US', dateOptions)}`;
+    currentDateEl.innerHTML = `<i class="fa-solid fa-calendar-day"></i> ${now.toLocaleDateString('en-US', dateOptions)}`;
 
     const timeOptions = { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true };
-    DOM.currentTimeEl.innerHTML = `<i class="fa-regular fa-clock"></i> ${now.toLocaleTimeString('en-US', timeOptions)}`;
+    currentTimeEl.innerHTML = `<i class="fa-regular fa-clock"></i> ${now.toLocaleTimeString('en-US', timeOptions)}`;
 };
 
-/**
- * Attaches all the application's event listeners.
- */
-const attachEventListeners = () => {
-  const originalPlaceholder = DOM.todoInput.placeholder;
 
-  DOM.todoForm.addEventListener('submit', (e) => {
+// --- INITIALIZATION ---
+document.addEventListener('DOMContentLoaded', () => {
+  const originalPlaceholder = todoInput.placeholder;
+
+  todoForm.addEventListener('submit', (e) => {
     e.preventDefault();
-    const newText = DOM.todoInput.value.trim();
+    const newText = todoInput.value.trim();
     if (newText) {
       addTodo(newText);
-      DOM.todoInput.value = '';
-      DOM.todoInput.classList.remove('todo-input--error');
-      DOM.todoInput.placeholder = originalPlaceholder;
+      todoInput.value = '';
+      todoInput.classList.remove('todo-input--error');
+      todoInput.placeholder = originalPlaceholder;
     } else {
-      DOM.todoInput.value = ''; // Clear out any whitespace
-      DOM.todoInput.classList.add('todo-input--error', 'animate-shake');
-      DOM.todoInput.placeholder = "Oops! A task can't be empty.";
+      todoInput.value = ''; // Clear out any whitespace
+      todoInput.classList.add('todo-input--error', 'animate-shake');
+      todoInput.placeholder = "Oops! A task can't be empty.";
 
-      DOM.todoInput.addEventListener('animationend', () => {
-        DOM.todoInput.classList.remove('animate-shake');
+      // Remove shake animation class after it's done
+      todoInput.addEventListener('animationend', () => {
+        todoInput.classList.remove('animate-shake');
       }, { once: true });
     }
   });
 
-  DOM.todoInput.addEventListener('input', () => {
-    if(DOM.todoInput.classList.contains('todo-input--error')) {
-        DOM.todoInput.classList.remove('todo-input--error');
-        DOM.todoInput.placeholder = originalPlaceholder;
+  // Remove error styling once the user starts typing again
+  todoInput.addEventListener('input', () => {
+    if(todoInput.classList.contains('todo-input--error')) {
+        todoInput.classList.remove('todo-input--error');
+        todoInput.placeholder = originalPlaceholder;
     }
   });
 
-  DOM.clearCompletedBtn.addEventListener('click', clearCompletedTodos);
+  clearCompletedBtn.addEventListener('click', clearCompletedTodos);
 
-  DOM.cancelDeleteBtn.addEventListener('click', hideConfirmationDialog);
-  DOM.confirmationDialog.addEventListener('click', (e) => {
-    if (e.target === DOM.confirmationDialog) hideConfirmationDialog();
+  // Deletion Dialog listeners
+  cancelDeleteBtn.addEventListener('click', hideConfirmationDialog);
+
+  confirmationDialog.addEventListener('click', (e) => {
+    if (e.target === confirmationDialog) {
+      hideConfirmationDialog();
+    }
   });
   
-  DOM.confirmDeleteBtn.addEventListener('click', () => {
+  confirmDeleteBtn.addEventListener('click', () => {
     if (todoIdToDelete) {
-      const idToDelete = todoIdToDelete;
+      const idToDelete = todoIdToDelete; // Capture ID before it's cleared
       const todoElement = document.querySelector(`.todo-item[data-id="${idToDelete}"]`);
       
       hideConfirmationDialog();
 
       if (todoElement) {
         todoElement.classList.add('animate-fade-out');
-        setTimeout(() => deleteTodo(idToDelete), CONSTANTS.ANIMATION_DURATIONS.FADE_OUT);
+        setTimeout(() => {
+          deleteTodo(idToDelete);
+        }, 300); // Wait for animation
       } else {
         deleteTodo(idToDelete);
       }
     }
   });
 
-  DOM.helpBtn.addEventListener('click', showHelpDialog);
-  DOM.cancelHelpBtn.addEventListener('click', hideHelpDialog);
-  DOM.helpDialog.addEventListener('click', (e) => {
-    if (e.target === DOM.helpDialog) hideHelpDialog();
+  // Help Dialog listeners
+  helpBtn.addEventListener('click', showHelpDialog);
+  cancelHelpBtn.addEventListener('click', hideHelpDialog);
+  helpDialog.addEventListener('click', (e) => {
+    if (e.target === helpDialog) {
+      hideHelpDialog();
+    }
   });
 
-  DOM.helpTextarea.addEventListener('input', () => {
-    DOM.sendReportBtn.disabled = DOM.helpTextarea.value.trim().length < CONSTANTS.MIN_REPORT_LENGTH;
+  helpTextarea.addEventListener('input', () => {
+    sendReportBtn.disabled = helpTextarea.value.trim().length < 10;
   });
 
-  DOM.helpForm.addEventListener('submit', (e) => {
+  helpForm.addEventListener('submit', (e) => {
     e.preventDefault();
-    const reportText = DOM.helpTextarea.value.trim();
-    if (reportText.length >= CONSTANTS.MIN_REPORT_LENGTH) {
+    const reportText = helpTextarea.value.trim();
+    if (reportText.length >= 10) {
       console.log("--- USER ISSUE REPORT ---");
       console.log(reportText);
       console.log("-------------------------");
 
-      DOM.helpTextarea.style.display = 'none';
-      DOM.sendReportBtn.style.display = 'none';
-      DOM.helpForm.querySelector('.dialog-message').style.display = 'none';
-      DOM.helpSuccessMessage.style.display = 'flex';
-      DOM.cancelHelpBtn.querySelector('.dialog-button-text').textContent = 'Close';
+      helpTextarea.style.display = 'none';
+      sendReportBtn.style.display = 'none';
+      helpForm.querySelector('.dialog-message').style.display = 'none';
+      helpSuccessMessage.style.display = 'flex';
+      cancelHelpBtn.querySelector('.dialog-button-text').textContent = 'Close';
 
-      setTimeout(hideHelpDialog, CONSTANTS.ANIMATION_DURATIONS.SUCCESS_MESSAGE_DISPLAY);
+      setTimeout(hideHelpDialog, 3000); // Auto-close after 3 seconds
     }
   });
-};
 
-// --- INITIALIZATION ---
-const initializeApp = () => {
-  // 1. Get references to all DOM elements
-  DOM.todoForm = document.getElementById('todo-form');
-  DOM.todoInput = document.getElementById('todo-input-field');
-  DOM.todoListContainer = document.getElementById('todo-list-container');
-  DOM.currentDateEl = document.getElementById('current-date');
-  DOM.currentTimeEl = document.getElementById('current-time');
-  DOM.clearCompletedBtn = document.getElementById('clear-completed-btn');
-  DOM.confirmationDialog = document.getElementById('confirmation-dialog');
-  DOM.confirmDeleteBtn = document.getElementById('confirm-delete-btn');
-  DOM.cancelDeleteBtn = document.getElementById('cancel-delete-btn');
-  DOM.helpBtn = document.getElementById('help-btn');
-  DOM.helpDialog = document.getElementById('help-dialog');
-  DOM.helpForm = document.getElementById('help-form');
-  DOM.helpTextarea = document.getElementById('help-textarea');
-  DOM.cancelHelpBtn = document.getElementById('cancel-help-btn');
-  DOM.sendReportBtn = document.getElementById('send-report-btn');
-  DOM.helpSuccessMessage = document.getElementById('help-success-message');
-
-  // 2. Initialize AOS library
-  AOS.init({
-    duration: 600,
-    once: true,
-    offset: 20,
-  });
-
-  // 3. Attach all event listeners
-  attachEventListeners();
-
-  // 4. Start recurring tasks and load initial data
+  // Initialize and update date/time every second
   updateDateTime();
   setInterval(updateDateTime, 1000);
 
   loadTodos();
   renderTodos();
-};
-
-document.addEventListener('DOMContentLoaded', initializeApp);
+});
