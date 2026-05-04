@@ -284,6 +284,29 @@ ul {
   display: none;
 }
 
+.cancel-clear-button {
+  background-color: #fef2f2;
+  color: #ef4444;
+  padding: 0.5rem;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 300ms;
+  border: 1px solid #fecaca;
+  flex-shrink: 0;
+}
+.cancel-clear-button:hover {
+  background-color: #fee2e2;
+  color: #b91c1c;
+  border-color: #fca5a5;
+}
+.cancel-clear-button .clear-button-text {
+  display: none;
+}
+
 
 /* Todo Input Form */
 .todo-input-form {
@@ -336,6 +359,7 @@ ul {
   display: flex;
   justify-content: flex-end;
   margin-bottom: 1.5rem;
+  gap: 0.5rem;
 }
 
 /* Todo List */
@@ -609,6 +633,12 @@ ul {
     padding: 0.5rem 1rem;
   }
   .clear-completed-button .clear-button-text {
+    display: inline;
+  }
+  .cancel-clear-button {
+    padding: 0.5rem 1rem;
+  }
+  .cancel-clear-button .clear-button-text {
     display: inline;
   }
 }
