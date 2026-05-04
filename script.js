@@ -4,7 +4,7 @@ let todoIdToDelete = null;
 let clearCompletedTimeout = null;
 
 // --- DOM ELEMENT REFERENCES (will be assigned after DOM is created) ---
-let todoForm, todoInput, todoListContainer, currentDateEl, currentTimeEl, clearCompletedBtn;
+let todoForm, todoInput, todoListContainer, currentDateEl, currentTimeEl, clearCompletedBtn, cancelClearBtn;
 let confirmationDialog, confirmDeleteBtn, cancelDeleteBtn;
 let helpBtn, helpDialog, helpForm, helpTextarea, cancelHelpBtn, sendReportBtn, helpSuccessMessage;
 let toastNotification, toastMessage;
@@ -58,6 +58,10 @@ const createAppLayout = () => {
 
         <!-- Actions Toolbar -->
         <div class="actions-toolbar">
+           <button id="cancel-clear-btn" class="cancel-clear-button" style="display: none;" aria-label="Cancel clearing completed tasks">
+            <i class="fa-solid fa-xmark"></i>
+            <span class="clear-button-text">Cancel</span>
+          </button>
            <button id="clear-completed-btn" class="clear-completed-button" style="display: none;" aria-label="Clear all completed tasks">
             <i class="fa-solid fa-trash-can-arrow-up"></i>
             <span class="clear-button-text">Clear All Completed</span>
@@ -213,6 +217,8 @@ const clearCompletedTodos = () => {
   clearCompletedBtn.disabled = true;
   clearCompletedBtn.style.opacity = '0.5';
   clearCompletedBtn.style.cursor = 'not-allowed';
+  
+  cancelClearBtn.style.display = 'flex';
 
   clearCompletedTimeout = setTimeout(() => {
     toastNotification.classList.remove('toast-notification--visible');
@@ -220,6 +226,7 @@ const clearCompletedTodos = () => {
     clearCompletedBtn.disabled = false;
     clearCompletedBtn.style.opacity = '';
     clearCompletedBtn.style.cursor = '';
+    cancelClearBtn.style.display = 'none';
 
     const itemsToRemove = document.querySelectorAll('.toggle-button--completed');
     if (itemsToRemove.length === 0) return;
@@ -238,6 +245,21 @@ const clearCompletedTodos = () => {
       renderTodos();
     }, 400); // Match CSS animation duration
   }, 10000);
+};
+
+const cancelClearTodos = () => {
+  if (clearCompletedTimeout) {
+    clearTimeout(clearCompletedTimeout);
+    clearCompletedTimeout = null;
+  }
+  
+  toastNotification.classList.remove('toast-notification--visible');
+  
+  clearCompletedBtn.disabled = false;
+  clearCompletedBtn.style.opacity = '';
+  clearCompletedBtn.style.cursor = '';
+  
+  cancelClearBtn.style.display = 'none';
 };
 
 // --- DIALOGS ---
@@ -398,6 +420,9 @@ const renderTodos = () => {
   // Show/hide clear completed button
   const hasCompleted = todos.some(t => t.completed);
   clearCompletedBtn.style.display = hasCompleted ? 'flex' : 'none';
+  if (!hasCompleted) {
+    cancelClearBtn.style.display = 'none';
+  }
 };
 
 /**
@@ -428,6 +453,7 @@ document.addEventListener('DOMContentLoaded', () => {
   currentDateEl = document.getElementById('current-date');
   currentTimeEl = document.getElementById('current-time');
   clearCompletedBtn = document.getElementById('clear-completed-btn');
+  cancelClearBtn = document.getElementById('cancel-clear-btn');
   confirmationDialog = document.getElementById('confirmation-dialog');
   confirmDeleteBtn = document.getElementById('confirm-delete-btn');
   cancelDeleteBtn = document.getElementById('cancel-delete-btn');
@@ -473,6 +499,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   clearCompletedBtn.addEventListener('click', clearCompletedTodos);
+  cancelClearBtn.addEventListener('click', cancelClearTodos);
 
   // Deletion Dialog listeners
   cancelDeleteBtn.addEventListener('click', hideConfirmationDialog);
