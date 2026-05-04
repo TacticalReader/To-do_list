@@ -1,11 +1,13 @@
 // --- STATE ---
 let todos = [];
 let todoIdToDelete = null;
+let clearCompletedTimeout = null;
 
 // --- DOM ELEMENT REFERENCES (will be assigned after DOM is created) ---
 let todoForm, todoInput, todoListContainer, currentDateEl, currentTimeEl, clearCompletedBtn;
 let confirmationDialog, confirmDeleteBtn, cancelDeleteBtn;
 let helpBtn, helpDialog, helpForm, helpTextarea, cancelHelpBtn, sendReportBtn, helpSuccessMessage;
+let toastNotification, toastMessage;
 
 // --- HTML STRUCTURE ---
 const createAppLayout = () => {
@@ -133,6 +135,12 @@ const createAppLayout = () => {
         </form>
       </div>
     </div>
+
+    <!-- Toast Notification -->
+    <div id="toast-notification" class="toast-notification">
+      <i class="fa-solid fa-circle-info"></i>
+      <span id="toast-message"></span>
+    </div>
   `;
 };
 
@@ -195,19 +203,41 @@ const clearCompletedTodos = () => {
 
   if (completedItems.length === 0) return;
 
-  completedItems.forEach(button => {
-    const li = button.closest('.todo-item');
-    if (li) {
-      li.classList.add('animate-erase-out');
-    }
-  });
+  if (clearCompletedTimeout) {
+    clearTimeout(clearCompletedTimeout);
+  }
 
-  // Wait for animation to finish before updating state and re-rendering
-  setTimeout(() => {
-    todos = todos.filter(t => !t.completed);
-    saveTodos();
-    renderTodos();
-  }, 400); // Match CSS animation duration
+  toastMessage.textContent = "All completed tasks will disappear in 10 seconds.";
+  toastNotification.classList.add('toast-notification--visible');
+
+  clearCompletedBtn.disabled = true;
+  clearCompletedBtn.style.opacity = '0.5';
+  clearCompletedBtn.style.cursor = 'not-allowed';
+
+  clearCompletedTimeout = setTimeout(() => {
+    toastNotification.classList.remove('toast-notification--visible');
+    
+    clearCompletedBtn.disabled = false;
+    clearCompletedBtn.style.opacity = '';
+    clearCompletedBtn.style.cursor = '';
+
+    const itemsToRemove = document.querySelectorAll('.toggle-button--completed');
+    if (itemsToRemove.length === 0) return;
+
+    itemsToRemove.forEach(button => {
+      const li = button.closest('.todo-item');
+      if (li) {
+        li.classList.add('animate-erase-out');
+      }
+    });
+
+    // Wait for animation to finish before updating state and re-rendering
+    setTimeout(() => {
+      todos = todos.filter(t => !t.completed);
+      saveTodos();
+      renderTodos();
+    }, 400); // Match CSS animation duration
+  }, 10000);
 };
 
 // --- DIALOGS ---
@@ -408,6 +438,8 @@ document.addEventListener('DOMContentLoaded', () => {
   cancelHelpBtn = document.getElementById('cancel-help-btn');
   sendReportBtn = document.getElementById('send-report-btn');
   helpSuccessMessage = document.getElementById('help-success-message');
+  toastNotification = document.getElementById('toast-notification');
+  toastMessage = document.getElementById('toast-message');
 
   // 3. Attach event listeners and run initialization logic
   const originalPlaceholder = todoInput.placeholder;
