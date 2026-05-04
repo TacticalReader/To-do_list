@@ -58,7 +58,7 @@ const createAppLayout = () => {
         <div class="actions-toolbar">
            <button id="clear-completed-btn" class="clear-completed-button" style="display: none;" aria-label="Clear all completed tasks">
             <i class="fa-solid fa-trash-can-arrow-up"></i>
-            <span class="clear-button-text">Clear Completed</span>
+            <span class="clear-button-text">Clear All Completed</span>
           </button>
         </div>
         
